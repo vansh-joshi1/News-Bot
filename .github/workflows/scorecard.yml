@@ -1,0 +1,36 @@
+name: scorecard
+
+on:
+  schedule:
+    - cron: "30 22 * * 2-6"  # 22:30 UTC Tue-Sat = after US close Mon-Fri
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bot-state
+  cancel-in-progress: false
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m newsbot.scorecard
+      - name: Commit results
+        run: |
+          git config user.name "market-mover-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data
+          if ! git diff --cached --quiet; then
+            git commit -m "scorecard: $(date -u +%F)"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push
+          fi
