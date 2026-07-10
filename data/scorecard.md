@@ -1,6 +1,6 @@
 # Scorecard
 
-Total alerts: 22
+Total alerts: 48
 
 ## T+1 day: no evaluated alerts yet
 
